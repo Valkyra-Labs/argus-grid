@@ -1,5 +1,12 @@
 # argus-grid
 
+[![CI](https://github.com/Valkyra-Labs/argus-grid/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Valkyra-Labs/argus-grid/actions/workflows/ci.yml)
+[![License: MIT OR Apache-2.0](https://img.shields.io/badge/License-MIT%20OR%20Apache--2.0-blue.svg)](#license)
+[![Tests](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Valkyra-Labs/argus-grid/badges/tests.json)](https://github.com/Valkyra-Labs/argus-grid/actions/workflows/ci.yml)
+
+The tests badge is published by CI from each green run on `main`: tests
+passed in `pnpm test` (Vitest, `test/`) on Linux, Node 22.
+
 Data engine for an operations grid of 50,000 requests, in TypeScript.
 
 argus-grid generates a deterministic dataset of service requests
