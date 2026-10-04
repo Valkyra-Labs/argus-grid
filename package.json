@@ -11,10 +11,17 @@
   "files": [
     "dist"
   ],
+  "sideEffects": [
+    "./dist/worker/entry.js"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./worker": {
+      "types": "./dist/worker/entry.d.ts",
+      "default": "./dist/worker/entry.js"
     },
     "./pools/en": {
       "types": "./dist/pools/en.d.ts",

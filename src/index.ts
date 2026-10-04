@@ -9,3 +9,5 @@ export * from "./edit.js";
 export * from "./history.js";
 export * from "./colleague.js";
 export * from "./csv.js";
+export * from "./worker/protocol.js";
+export * from "./loader.js";
