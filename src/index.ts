@@ -5,3 +5,5 @@ export * from "./text.js";
 export * from "./filter.js";
 export * from "./roles.js";
 export * from "./views.js";
+export * from "./edit.js";
+export * from "./history.js";
