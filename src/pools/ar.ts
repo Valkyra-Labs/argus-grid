@@ -125,5 +125,5 @@ export const labels: Labels = {
   ],
   priority: ["منخفضة", "متوسطة", "عالية"],
   channel: ["الموقع", "التطبيق", "شريك", "المكتب"],
-  presets: { all: "كل الطلبات", urgent: "العاجلة", finance: "المالية" },
+  presets: { all: "كل الطلبات", urgent: "العاجلة", finance: "المالية", action: "تحتاج إلى إجراء" },
 };

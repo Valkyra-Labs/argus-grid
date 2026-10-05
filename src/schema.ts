@@ -134,5 +134,5 @@ export const COMMENT_MAX = 200;
 export const OPERATOR_REGIONS: readonly number[] = [0, 1, 2];
 
 /* Preset views. Their display names come from the language module. */
-export const PRESET_IDS = ["all", "urgent", "finance"] as const;
+export const PRESET_IDS = ["all", "urgent", "finance", "action"] as const;
 export type PresetId = (typeof PRESET_IDS)[number];

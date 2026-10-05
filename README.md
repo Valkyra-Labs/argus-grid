@@ -68,7 +68,7 @@ All of it is exported from `argus-grid`.
 | generation | `generateChunk(seed, start, count)`, `generateAll(seed, total?, chunkSize?)`, `chunkCount`, `chunkBounds`, `makeRng` |
 | text | `TextPools`, `Labels`, `validatePools`, `validateLabels`, `rowText`, `commentText`, `tagsText`, `buildSearchIndex`, `refreshSearch` |
 | filter | `filterRows(store, order, criteria, search?)` returns the index array, facets (status, priority, region, SLA breach) and compute time; `sortOrder(store, sort, pools?)` (amounts by their value in roubles); `percentile`; `splitMatches` |
-| views | `View`, `PRESET_VIEWS`, `criteriaFor(view, role)`, `serializeView` and `parseView` (base64url), `viewToUrl`, `saveView`, `removeView`, `validateViewName`, `serializeViews`, `parseViews` |
+| views | `View`, `PRESET_VIEWS` (all requests, urgent, finance, and the open requests that need action), `criteriaFor(view, role)`, `serializeView` and `parseView` (base64url), `viewToUrl`, `saveView`, `removeView`, `validateViewName`, `serializeViews`, `parseViews` |
 | roles | `roleRules(role)`, `visibleColumns`, `hiddenForRole`, `allowedRegions`, `canEdit`, `canBulk`, `canExport`, `canSeeRow` |
 | edits | `validateEdit(col, draft, row)` and `checkStatus`, `checkComment` return an error code or null; `normalizeDraft`; `editContext` |
 | undo | `EditHistory`: `setStatus(store, rows, status, now)`, `setComment(store, row, value, now)`, `undo(store, { overwrite? })` |
