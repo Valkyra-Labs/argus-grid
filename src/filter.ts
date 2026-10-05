@@ -1,5 +1,5 @@
 import { COLUMN_BY_ID, METRIC_COUNT, METRIC_IDS, PRIORITY_COUNT, STATUS_COUNT } from "./schema.js";
-import { getComment, type ColumnStore } from "./store.js";
+import { convertedAmount, getComment, type ColumnStore } from "./store.js";
 import { commentText, tagsText, type SearchIndex, type TextPools } from "./text.js";
 
 /*
@@ -130,6 +130,7 @@ const metricOffset = new Map<string, number>(METRIC_IDS.map((m, i) => [m, i]));
   Returns a full permutation of row indices sorted by the given column, ties
   in row order. Text columns sort by their displayed strings with the pool's
   collation, so they need `pools`; numeric and enum columns sort by value.
+  Amounts sort by their value in the reference currency (CURRENCY_RATES).
 */
 export function sortOrder(
   store: ColumnStore,
@@ -169,8 +170,12 @@ function numericColumn(
   switch (id) {
     case "date":
       return { data: store.date, stride: 1 };
-    case "amount":
-      return { data: store.amount, stride: 1 };
+    case "amount": {
+      /* By value, not by the bare number: RUB 1,000 is less than USD 100 */
+      const value = new Float64Array(store.size);
+      for (let i = 0; i < store.size; i++) value[i] = convertedAmount(store, i);
+      return { data: value, stride: 1 };
+    }
     case "currency":
       return { data: store.currency, stride: 1 };
     case "status":

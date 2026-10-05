@@ -5,6 +5,7 @@ import {
   CLIENT_COUNT,
   COMMENT_COUNT,
   CURRENCY_COUNT,
+  CURRENCY_RATES,
   METRIC_COUNT,
   OWNER_COUNT,
   REGION_COUNT,
@@ -57,7 +58,8 @@ export function generateChunk(seed: number, start: number, count: number): Chunk
     const date = EPOCH_START + pick(365) * DAY + pick(DAY);
     const currency = pick(CURRENCY_COUNT);
     const base = Math.round(Math.exp(rng() * 7 + 6) / 10) * 10;
-    const amount = currency === 0 ? base : Math.round(base / 80);
+    const rate = CURRENCY_RATES[currency] ?? 1;
+    const amount = rate === 1 ? base : Math.round(base / rate);
     /* Skewed status distribution: most requests are in progress or closed */
     const r = rng();
     const status =

@@ -27,6 +27,13 @@ export const CHANNEL_COUNT = 4;
 export const CURRENCIES = ["RUB", "USD", "EUR"] as const;
 export const CURRENCY_COUNT = CURRENCIES.length;
 
+/* The value of one unit of each currency in the reference currency, by
+   currency code. These are the dataset's own fixed rates (the generator
+   draws every amount in roubles and converts it at them), not market
+   rates; amounts in different currencies are compared at them. */
+export const REFERENCE_CURRENCY = "RUB";
+export const CURRENCY_RATES: readonly number[] = [1, 80, 80];
+
 /* Sizes every language pool must match exactly, so the generator draws the
    same codes whatever language is displayed. */
 export const REGION_COUNT = 8;

@@ -1,4 +1,4 @@
-import { METRIC_COUNT, Status } from "./schema.js";
+import { CURRENCY_RATES, METRIC_COUNT, Status } from "./schema.js";
 
 /*
   Columnar store. Every generated field is a typed array of codes or
@@ -135,6 +135,11 @@ export function rowOfId(id: string, size: number): number {
   if (!m) return -1;
   const i = Number(m[1]) - 1;
   return i >= 0 && i < size ? i : -1;
+}
+
+/* A row's amount in the reference currency, at the dataset's fixed rates */
+export function convertedAmount(store: ColumnStore, i: number): number {
+  return (store.amount[i] ?? 0) * (CURRENCY_RATES[store.currency[i] ?? 0] ?? 1);
 }
 
 export function getComment(store: ColumnStore, i: number): CommentValue {

@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { generateAll } from "../src/generator.js";
-import { OPERATOR_REGIONS, REGION_COUNT, STATUS_COUNT } from "../src/schema.js";
+import {
+  CURRENCIES,
+  CURRENCY_RATES,
+  OPERATOR_REGIONS,
+  REFERENCE_CURRENCY,
+  REGION_COUNT,
+  STATUS_COUNT,
+} from "../src/schema.js";
+import { convertedAmount } from "../src/store.js";
 import { buildSearchIndex, rowText } from "../src/text.js";
 import { EMPTY_CRITERIA, filterRows, percentile, sortOrder, splitMatches } from "../src/filter.js";
 import { pools as en } from "../src/pools/en.js";
@@ -144,15 +152,44 @@ describe("filterRows", () => {
 
 describe("sortOrder", () => {
   it("sorts numeric columns ascending and descending, stably", () => {
-    const asc = sortOrder(store, { id: "amount", desc: false });
+    const asc = sortOrder(store, { id: "sla", desc: false });
     expect(asc).not.toBeNull();
     for (let p = 1; p < 2_000; p++) {
-      const a = store.amount[asc![p - 1]!] ?? 0;
-      const b = store.amount[asc![p]!] ?? 0;
+      const a = store.sla[asc![p - 1]!] ?? 0;
+      const b = store.sla[asc![p]!] ?? 0;
       expect(a <= b).toBe(true);
+      if (a === b) expect(asc![p - 1]! < asc![p]!).toBe(true);
     }
-    const desc = sortOrder(store, { id: "amount", desc: true });
-    expect(store.amount[desc![0]!]).toBe(store.amount[asc![49_999]!]);
+    const desc = sortOrder(store, { id: "sla", desc: true });
+    expect(store.sla[desc![0]!]).toBe(store.sla[asc![49_999]!]);
+  });
+
+  it("sorts amounts by their value in the reference currency, not by the bare number", () => {
+    const small = generateAll(5, 6, 6);
+    const set = (row: number, amount: number, currency: string) => {
+      small.amount[row] = amount;
+      small.currency[row] = CURRENCIES.indexOf(currency as (typeof CURRENCIES)[number]);
+    };
+    set(0, 300_000, "RUB");
+    set(1, 4_000, "USD");
+    set(2, 3_900, "EUR");
+    set(3, 1_000, "RUB");
+    set(4, 10, "USD");
+    set(5, 11, "EUR");
+    const rate = (c: string) => CURRENCY_RATES[CURRENCIES.indexOf(c as (typeof CURRENCIES)[number])]!;
+    expect(REFERENCE_CURRENCY).toBe("RUB");
+    expect(rate("RUB")).toBe(1);
+    expect(convertedAmount(small, 1)).toBe(4_000 * rate("USD"));
+    /* By the bare numbers RUB 1,000 would rank above USD 4,000 */
+    expect(Array.from(sortOrder(small, { id: "amount", desc: true })!)).toEqual([1, 2, 0, 3, 5, 4]);
+    expect(Array.from(sortOrder(small, { id: "amount", desc: false })!)).toEqual([4, 5, 3, 0, 2, 1]);
+
+    const desc = sortOrder(store, { id: "amount", desc: true })!;
+    for (let p = 1; p < desc.length; p++) {
+      expect(convertedAmount(store, desc[p - 1]!) >= convertedAmount(store, desc[p]!)).toBe(true);
+    }
+    const top = new Set(Array.from(desc.subarray(0, 50), (i) => store.currency[i]));
+    expect(top.size).toBeGreaterThan(1);
   });
 
   it("sorts text columns and metric columns", () => {
