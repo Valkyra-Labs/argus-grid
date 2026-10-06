@@ -108,13 +108,23 @@ describe("same seed, every language", () => {
     }
   });
 
+  it("writes numbers in generated Arabic text in Arabic-Indic digits", () => {
+    const s = generateAll(5, 1, 1);
+    writeComment(s, 0, { kind: "colleague", n: 1234 }, 0);
+    expect(rowText(s, ar, 0).comment).toBe("تعديل الزميل ١٢٣٤");
+    expect(rowText(s, en, 0).comment).toBe("Colleague's edit 1234");
+    for (const list of [ar.clients, ar.regions, ar.owners, ar.authors, ar.comments, ar.tags]) {
+      for (const text of list) expect(text).not.toMatch(/[0-9]/);
+    }
+  });
+
   it("keeps edited comments language-neutral until displayed", () => {
     const s = generateAll(5, 100, 100);
     writeComment(s, 3, { kind: "colleague", n: 2 }, 0);
     writeComment(s, 4, { kind: "text", text: "Typed by hand" }, 0);
     expect(rowText(s, en, 3).comment).toBe("Colleague's edit 2");
     expect(rowText(s, ru, 3).comment).toBe("Правка коллеги 2");
-    expect(rowText(s, ar, 3).comment).toBe("تعديل الزميل 2");
+    expect(rowText(s, ar, 3).comment).toBe("تعديل الزميل ٢");
     for (const [, p] of languages) expect(rowText(s, p, 4).comment).toBe("Typed by hand");
     const search = buildSearchIndex(s, ru);
     expect(search[3]).toContain("правка коллеги 2");

@@ -3,7 +3,7 @@ import type { Labels, TextPools } from "../text.js";
 /* Arabic strings. Companies, places and people are invented. */
 
 export const pools: TextPools = {
-  locale: "ar",
+  locale: "ar-u-nu-arab",
   clients: [
     "شركة الأفق الرملي",
     "مؤسسة وادي السنديان",
@@ -67,7 +67,7 @@ export const pools: TextPools = {
     "ط. العوّاد",
   ],
   comments: [
-    "العميل يطلب معاودة الاتصال بعد الساعة 15:00",
+    "العميل يطلب معاودة الاتصال بعد الساعة ١٥:٠٠",
     "المستندات قيد المراجعة",
     "بانتظار تأكيد الدفع",
     "يرجى تأكيد عنوان التوصيل",
@@ -125,5 +125,5 @@ export const labels: Labels = {
   ],
   priority: ["منخفضة", "متوسطة", "عالية"],
   channel: ["الموقع", "التطبيق", "شريك", "المكتب"],
-  presets: { all: "كل الطلبات", urgent: "العاجلة", finance: "المالية" },
+  presets: { all: "كل الطلبات", urgent: "العاجلة", finance: "المالية", action: "تحتاج إلى إجراء" },
 };

@@ -117,5 +117,5 @@ export const labels: Labels = {
   status: ["New", "In progress", "Awaiting client", "In review", "Approved", "Rejected", "Closed"],
   priority: ["Low", "Medium", "High"],
   channel: ["Website", "App", "Partner", "Office"],
-  presets: { all: "All requests", urgent: "Urgent", finance: "Finance" },
+  presets: { all: "All requests", urgent: "Urgent", finance: "Finance", action: "Needs action" },
 };

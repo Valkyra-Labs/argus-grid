@@ -56,6 +56,15 @@ describe("bulk status with undo", () => {
     expect(history.size).toBe(1);
   });
 
+  it("refuses rejection for rows without a comment and applies the rest", () => {
+    const blank = rowsWhere((i) => store.comment[i] === 0 && store.status[i] !== Status.Rejected, 5);
+    const commented = rowsWhere((i) => store.comment[i] !== 0, 5);
+    const r = history.setStatus(store, [...blank, ...commented], Status.Rejected, NOW);
+    expect(Array.from(r.applied)).toEqual(commented);
+    expect(r.rejected).toEqual(blank.map((row) => ({ row, error: { code: "reject-needs-comment" } })));
+    for (const row of blank) expect(store.status[row]).not.toBe(Status.Rejected);
+  });
+
   it("undoes in reverse order across overlapping edits", () => {
     const before = storeDigest(store);
     history.setStatus(store, [1, 2, 3], Status.InProgress, NOW);

@@ -39,6 +39,11 @@ device.
   are codes into fixed-size text pools; tags are an 8-bit mask. Amounts,
   dates, SLA hours and metrics are `Float64Array`s (metrics row-major,
   15 per row).
+- Amounts are in roubles, US dollars or euros. The generator draws each
+  amount in roubles and converts it at the dataset's fixed rates
+  (`CURRENCY_RATES`, 80 roubles to the dollar and to the euro; not market
+  rates), and sorting by amount compares amounts at those same rates, so
+  the largest requests come first whatever their currency.
 - Comments written after generation (by the user or the colleague) live
   in a map beside the arrays, as free text or as the colleague's
   numbered note.
@@ -58,17 +63,17 @@ All of it is exported from `argus-grid`.
 
 | area | functions and types |
 |---|---|
-| schema | `COLUMNS`, `Status`, `Priority`, `Channel`, `CURRENCIES`, pool sizes, `TOTAL_ROWS`, `CHUNK_SIZE`, `DEFAULT_SEED`, `OPERATOR_REGIONS`, `PRESET_IDS` |
-| store | `createStore`, `applyChunk`, `chunkTransferables`, `getRow`, `rowId`, `rowOfId`, `getComment`, `writeStatus`, `writeComment` |
+| schema | `COLUMNS`, `Status`, `Priority`, `Channel`, `CURRENCIES`, `CURRENCY_RATES` and `REFERENCE_CURRENCY`, pool sizes, `TOTAL_ROWS`, `CHUNK_SIZE`, `DEFAULT_SEED`, `OPERATOR_REGIONS`, `PRESET_IDS` |
+| store | `createStore`, `applyChunk`, `chunkTransferables`, `getRow`, `rowId`, `rowOfId`, `convertedAmount`, `getComment`, `writeStatus`, `writeComment` |
 | generation | `generateChunk(seed, start, count)`, `generateAll(seed, total?, chunkSize?)`, `chunkCount`, `chunkBounds`, `makeRng` |
 | text | `TextPools`, `Labels`, `validatePools`, `validateLabels`, `rowText`, `commentText`, `tagsText`, `buildSearchIndex`, `refreshSearch` |
-| filter | `filterRows(store, order, criteria, search?)` returns the index array, facets (status, priority, region, SLA breach) and compute time; `sortOrder(store, sort, pools?)`; `percentile`; `splitMatches` |
-| views | `View`, `PRESET_VIEWS`, `criteriaFor(view, role)`, `serializeView` and `parseView` (base64url), `viewToUrl`, `saveView`, `removeView`, `validateViewName`, `serializeViews`, `parseViews` |
+| filter | `filterRows(store, order, criteria, search?)` returns the index array, facets (status, priority, region, SLA breach) and compute time; `sortOrder(store, sort, pools?)` (amounts by their value in roubles); `percentile`; `splitMatches` |
+| views | `View`, `PRESET_VIEWS` (all requests, urgent, finance, and the open requests that need action), `criteriaFor(view, role)`, `serializeView` and `parseView` (base64url), `viewToUrl`, `saveView`, `removeView`, `validateViewName`, `serializeViews`, `parseViews` |
 | roles | `roleRules(role)`, `visibleColumns`, `hiddenForRole`, `allowedRegions`, `canEdit`, `canBulk`, `canExport`, `canSeeRow` |
 | edits | `validateEdit(col, draft, row)` and `checkStatus`, `checkComment` return an error code or null; `normalizeDraft`; `editContext` |
 | undo | `EditHistory`: `setStatus(store, rows, status, now)`, `setComment(store, row, value, now)`, `undo(store, { overwrite? })` |
 | colleague | `colleagueSchedule(seed, count)`, `dueTicks`, `planColleagueEdit`, `applyRemoteEdit`, `beginEdit`, `detectConflict` |
-| CSV | `toCsv(store, index, columns, { headers, pools, labels, limit? })`, `cellText`, `csvEscape`, `CSV_LIMIT` (5,000) |
+| CSV | `toCsv(store, index, columns, { headers, pools, labels, limit? })`, `cellText`, `csvEscape`, `neutralizeFormula` (text that starts like a spreadsheet formula gets a leading apostrophe; number columns are left as they are), `CSV_LIMIT` (5,000) |
 | loading | `DatasetLoader` (worker or main thread, `subscribe` and `getSnapshot`), `createChunkProducer`, `WorkerRequest`, `WorkerResponse` |
 
 Errors meant for people are codes with the numbers a message needs, never

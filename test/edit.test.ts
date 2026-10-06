@@ -8,9 +8,9 @@ import { pools as ru } from "../src/pools/ru.js";
 const open = { status: 1, comment: "" };
 
 describe("validateEdit: status", () => {
-  it("accepts any known status", () => {
+  it("accepts any known status that needs no comment", () => {
     for (let i = 0; i < STATUS_COUNT; i++) {
-      if (i === APPROVED) continue;
+      if (i === APPROVED || i === REJECTED) continue;
       expect(validateEdit("status", String(i), open)).toBeNull();
     }
   });
@@ -30,6 +30,18 @@ describe("validateEdit: status", () => {
     expect(validateEdit("status", String(APPROVED), { status: 1, comment: "  " })).not.toBeNull();
     expect(
       validateEdit("status", String(APPROVED), { status: 1, comment: "проверено" }),
+    ).toBeNull();
+  });
+
+  it("requires a comment before rejecting", () => {
+    expect(validateEdit("status", String(REJECTED), open)).toEqual({
+      code: "reject-needs-comment",
+    });
+    expect(validateEdit("status", String(REJECTED), { status: 1, comment: " \t " })).toEqual({
+      code: "reject-needs-comment",
+    });
+    expect(
+      validateEdit("status", String(REJECTED), { status: 1, comment: "нет документов" }),
     ).toBeNull();
   });
 });

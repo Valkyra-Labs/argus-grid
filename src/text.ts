@@ -21,7 +21,8 @@ import { getComment, rowId, type ColumnStore, type CommentValue } from "./store.
 */
 
 export type TextPools = {
-  /* BCP 47 tag, used for collation when sorting text columns */
+  /* BCP 47 tag, used for collation when sorting text columns and for the
+     digits of numbers in generated text ("ar-u-nu-arab": Arabic-Indic) */
   locale: string;
   clients: readonly string[];
   regions: readonly string[];
@@ -96,6 +97,18 @@ export function validateLabels(labels: Labels): TextIssue[] {
   return issues;
 }
 
+const numberFormats = new Map<string, Intl.NumberFormat>();
+
+/* A whole number in the pool's digits, without grouping */
+function poolNumber(n: number, pools: TextPools): string {
+  let format = numberFormats.get(pools.locale);
+  if (!format) {
+    format = new Intl.NumberFormat(pools.locale, { useGrouping: false, maximumFractionDigits: 0 });
+    numberFormats.set(pools.locale, format);
+  }
+  return format.format(n);
+}
+
 export function commentText(value: CommentValue, pools: TextPools): string {
   switch (value.kind) {
     case "pool":
@@ -103,7 +116,7 @@ export function commentText(value: CommentValue, pools: TextPools): string {
     case "text":
       return value.text;
     case "colleague":
-      return pools.colleagueComment.replace("{n}", String(value.n));
+      return pools.colleagueComment.replace("{n}", poolNumber(value.n, pools));
   }
 }
 

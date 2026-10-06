@@ -7,7 +7,8 @@ import { commentText, tagsText, type Labels, type TextPools } from "./text.js";
   cells from the caller's labels and text cells from the caller's pools, so
   the engine writes no words of its own. Semicolon separated with CRLF by
   default (what Excel expects in many locales); the caller prepends a BOM
-  for a download if it wants one.
+  for a download if it wants one. Text that a spreadsheet would read as a
+  formula is written with a leading apostrophe (neutralizeFormula).
 */
 
 export const CSV_LIMIT = 5_000;
@@ -32,6 +33,21 @@ export function csvEscape(value: string, separator = ";"): string {
     ? `"${value.replace(/"/g, '""')}"`
     : value;
 }
+
+/*
+  A spreadsheet reads a cell that starts with = + - @ (or their full-width
+  forms), a tab or a carriage return as a formula, even inside quotes. A
+  leading apostrophe makes it text again. Only for cells of text: numbers
+  stay numbers, a negative amount included.
+*/
+const FORMULA_START = /^[=+\-@\t\r\uff1d\uff0b\uff0d\uff20]/;
+
+export function neutralizeFormula(value: string): string {
+  return FORMULA_START.test(value) ? `'${value}` : value;
+}
+
+/* Column kinds whose cells are numbers, written as the formatter gives them */
+const NUMERIC_KINDS: ReadonlySet<ColumnSpec["kind"]> = new Set(["money", "number", "hours", "date"]);
 
 function isoDate(ms: number): string {
   return new Date(ms).toISOString().slice(0, 10);
@@ -98,11 +114,21 @@ export function toCsv(
   const specs = columns
     .map((id) => COLUMN_BY_ID.get(id))
     .filter((s): s is ColumnSpec => s !== undefined);
-  const lines: string[] = [specs.map((s) => csvEscape(options.headers[s.id] ?? s.id, sep)).join(sep)];
+  const text = specs.map((s) => !NUMERIC_KINDS.has(s.kind));
+  const lines: string[] = [
+    specs.map((s) => csvEscape(neutralizeFormula(options.headers[s.id] ?? s.id), sep)).join(sep),
+  ];
   const n = Math.min(index.length, options.limit ?? CSV_LIMIT);
   for (let p = 0; p < n; p++) {
     const row = index[p] ?? 0;
-    lines.push(specs.map((s) => csvEscape(cellText(store, row, s, options), sep)).join(sep));
+    lines.push(
+      specs
+        .map((s, c) => {
+          const cell = cellText(store, row, s, options);
+          return csvEscape(text[c] ? neutralizeFormula(cell) : cell, sep);
+        })
+        .join(sep),
+    );
   }
   return lines.join(options.newline ?? "\r\n");
 }

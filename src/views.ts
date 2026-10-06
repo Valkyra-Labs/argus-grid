@@ -63,6 +63,15 @@ export const PRESET_VIEWS: readonly View[] = [
     sort: { id: "amount", desc: true },
     density: "default",
   },
+  {
+    /* What needs someone's action: open requests, the least SLA time first */
+    name: "action",
+    filters: { status: [0, 1, 2, 3], priority: [], slaBreached: false, regions: [] },
+    search: "",
+    columns: ["id", "client", "status", "sla", "priority", "owner", "region", "amount", "date"],
+    sort: { id: "sla", desc: false },
+    density: "default",
+  },
 ];
 
 export function isPreset(name: string): boolean {

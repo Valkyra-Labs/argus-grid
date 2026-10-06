@@ -26,6 +26,7 @@ export function checkStatus(value: number, commentBlank: boolean): EditError | n
     return { code: "status-unknown" };
   }
   if (value === APPROVED && commentBlank) return { code: "approve-needs-comment" };
+  if (value === REJECTED && commentBlank) return { code: "reject-needs-comment" };
   return null;
 }
 

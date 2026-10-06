@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { generateAll } from "../src/generator.js";
-import { MARGIN_COLUMNS, OPERATOR_REGIONS } from "../src/schema.js";
+import { MARGIN_COLUMNS, OPERATOR_REGIONS, Status } from "../src/schema.js";
 import { EMPTY_CRITERIA, filterRows } from "../src/filter.js";
 import {
   canBulk,
@@ -30,6 +30,8 @@ import {
   type View,
 } from "../src/views.js";
 import { labels as en } from "../src/pools/en.js";
+import { labels as ar } from "../src/pools/ar.js";
+import { labels as ru } from "../src/pools/ru.js";
 
 const custom: View = {
   name: "Мой вид",
@@ -159,12 +161,22 @@ describe("view serialization", () => {
 
 describe("presets and saved views", () => {
   it("names presets by id, with a label for each in the language module", () => {
-    expect(PRESET_VIEWS.map((v) => v.name)).toEqual(["all", "urgent", "finance"]);
+    expect(PRESET_VIEWS.map((v) => v.name)).toEqual(["all", "urgent", "finance", "action"]);
     for (const v of PRESET_VIEWS) {
       expect(isPreset(v.name)).toBe(true);
       expect(en.presets[v.name as keyof typeof en.presets]).toBeTruthy();
     }
     expect(isPreset("Мой вид")).toBe(false);
+  });
+
+  it("has a view of the requests that need action: open ones, SLA shown, tightest first", () => {
+    const action = PRESET_VIEWS.find((v) => v.name === "action")!;
+    expect(action.filters.status).toEqual([Status.New, Status.InProgress, Status.AwaitingClient, Status.InReview]);
+    expect(action.filters.status.every((s) => s < Status.Approved)).toBe(true);
+    expect(action.columns.slice(0, 4)).toEqual(["id", "client", "status", "sla"]);
+    expect(action.sort).toEqual({ id: "sla", desc: false });
+    for (const labels of [en, ru, ar]) expect(labels.presets.action).toBeTruthy();
+    expect(validateViewName("action")).toEqual({ code: "name-is-preset" });
   });
 
   it("validates a name with codes", () => {
